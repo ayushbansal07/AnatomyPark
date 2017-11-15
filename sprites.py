@@ -72,7 +72,7 @@ class Player(pg.sprite.Sprite):
 				pos = self.pos + BARREL_OFFSET.rotate(-self.rot)
 				Bullet(self.game,self.pos,direction)
 				self.vel = vec(-KICKBACK,0).rotate(-self.rot)
-				MuzzleFalsh(self.game,pos)
+				MuzzleFlash(self.game,pos)
 
 			
 
@@ -271,7 +271,7 @@ class Bac_Bullet(pg.sprite.Sprite):
 		if pg.time.get_ticks() - self.spawn_time > BAC_BULLET_LIFETIME:
 			self.kill()
 
-class MuzzleFalsh(pg.sprite.Sprite):
+class MuzzleFlash(pg.sprite.Sprite):
 	def __init__(self,game,pos):
 		self.groups = game.all_sprites
 		pg.sprite.Sprite.__init__(self,self.groups)
@@ -287,3 +287,83 @@ class MuzzleFalsh(pg.sprite.Sprite):
 		if pg.time.get_ticks() - self.spawn_time > FLASH_DURATION:
 			self.kill()
 
+class WBC_protect(pg.sprite.Sprite):
+	def __init__(self,game,x,y,cover):
+		self.groups = game.all_sprites, game.wbc_protect 
+		pg.sprite.Sprite.__init__(self,self.groups)
+		self.game = game
+		self.image = game.wbc_img
+		self.rect = self.image.get_rect()
+		self.pos = vec(x,y)*TILESIZE
+		self.rect.center = self.pos
+		
+		self.health = 50
+		self.cover = cover
+		self.rot = 0
+		self.vel = (0,0)
+		self.acc = (0,0)
+		self.hit_rect = BAC_HIT_RECT.copy()
+		self.hit_rect.center = self.rect.center
+		#self.health = BAC_HEALTH
+
+	def arrive(self,target):
+		self.rot = (target - self.pos).angle_to(vec(1,0))
+		self.image = pg.transform.rotate(self.game.wbc_img,self.rot)
+		self.rect = self.image.get_rect()
+		self.rect.center = self.pos
+		self.acc = vec(1,0).rotate(-self.rot)
+		
+
+	def avoid_wbc_and_player(self):
+		for wbc in self.game.wbc_protect:
+			if wbc!=self:
+				dist = self.pos - wbc.pos
+				if 0 < dist.length() < WBC_AVOID_RADIUS:
+					self.acc +=dist.normalize()
+		dist = self.pos - self.game.player.pos
+		if 0< dist.length() < WBC_AVOID_RADIUS:
+			self.acc += dist.normalize()
+
+	def update(self):
+		target = self.game.player.pos
+		if(self.cover == 1):
+			self.arrive(target+(0,-TILESIZE))
+		if(self.cover == 2):
+			self.arrive(target+(0,+TILESIZE))
+		if(self.cover == 3):
+			self.arrive(target+(-TILESIZE,-TILESIZE))
+		if(self.cover == 4):
+			self.arrive(target+(+TILESIZE,-TILESIZE))
+		if(self.cover == 5):
+			self.arrive(target+(-TILESIZE,+TILESIZE))
+		if(self.cover == 6):
+			self.arrive(target+(+TILESIZE,+TILESIZE))
+		if(self.cover == 7):
+			self.arrive(target+(TILESIZE,0))
+		if(self.cover == 8):
+			self.arrive(target+(-TILESIZE,0))
+		self.avoid_wbc_and_player()
+		self.acc.scale_to_length(WBC_SPEED)
+		self.acc -= self.vel 
+		self.vel += self.acc * self.game.dt
+		self.pos += self.vel * self.game.dt + 0.5*self.acc * (self.game.dt)**2
+		self.hit_rect.centerx = self.pos.x
+		collide_with_walls(self,self.game.walls,'x')
+		self.hit_rect.centery = self.pos.y
+		collide_with_walls(self,self.game.walls,'y')
+		self.rect.center = self.hit_rect.center
+		if(self.health<=0):
+			self.kill()
+
+class WBC_attack(pg.sprite.Sprite):
+	def __init__(self,game,pos):
+		self.groups = game.all_sprites, game.wbc_attack
+		pg.sprite.Sprite.__init__(self,self.groups)
+		self.game = game
+		self.rect = self.image.get_rect()
+		self.pos = pos 
+		self.rect.center = pos
+		self.image = game.bullet_img
+
+	def update(self):
+		pass

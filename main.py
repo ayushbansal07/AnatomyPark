@@ -47,6 +47,8 @@ class Game:
 		self.bullets = pg.sprite.Group()
 		self.acid_puddles = pg.sprite.Group()
 		self.bac_bullets = pg.sprite.Group()
+		self.wbc_protect = pg.sprite.Group()
+		cover = 1 
 		self.load_data()
 		for row,tiles in enumerate(self.map.data):
 			for col, tile in enumerate(tiles):
@@ -58,6 +60,9 @@ class Game:
 					Bacteria(self,col,row)
 				if tile == 'A':
 					Acid_Puddle(self,col,row)
+				if tile == 'W':
+					WBC_protect(self,col,row,cover)
+					cover+=1
 
 
 
@@ -79,6 +84,8 @@ class Game:
 		self.bullet_img = pg.transform.scale(self.bullet_img,(TILESIZE/4,TILESIZE/4))
 		self.puddle_img = pg.image.load("./images/acid_puddle.png")
 		self.puddle_img = pg.transform.scale(self.puddle_img,(TILESIZE*2,TILESIZE*2))
+		self.wbc_img = pg.image.load("./images/WBC.png")
+		self.wbc_img = pg.transform.scale(self.wbc_img,(TILESIZE,TILESIZE))
 		self.gun_flashes = []
 		for img in MUZZLE_FLASHES:
 			self.gun_flashes.append(pg.image.load(path.join("./images/png",img)).convert_alpha())
@@ -118,6 +125,11 @@ class Game:
 			self.player.health -= BAC_BULLET_HEALTH_RED*self.dt
 			if self.player.health < 0:
 				self.playing = False
+
+		hits = pg.sprite.groupcollide(self.wbc_protect,self.bac_bullets, False,True)
+		for hit in hits:
+			hit.health -= BULLET_DAMAGE
+
 				
 		self.all_sprites.update()
 		
