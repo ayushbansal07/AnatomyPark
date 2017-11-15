@@ -32,7 +32,7 @@ class Game:
 	def __init__(self):
 		#initialize game window
 		pg.init()
-		pg.mixer.init()
+		#pg.mixer.init()
 		self.screen = pg.display.set_mode((WIDTH,HEIGHT))
 		pg.display.set_caption(TITLE)
 		self.clock = pg.time.Clock()
@@ -79,6 +79,9 @@ class Game:
 		self.bullet_img = pg.transform.scale(self.bullet_img,(TILESIZE/4,TILESIZE/4))
 		self.puddle_img = pg.image.load("./images/acid_puddle.png")
 		self.puddle_img = pg.transform.scale(self.puddle_img,(TILESIZE*2,TILESIZE*2))
+		self.gun_flashes = []
+		for img in MUZZLE_FLASHES:
+			self.gun_flashes.append(pg.image.load(path.join("./images/png",img)).convert_alpha())
 		
 	def run(self):
 		#Game loop

@@ -1,7 +1,7 @@
 import pygame as pg
 from settings import *
 from tilemap import collide_hit_rect
-from random import uniform
+from random import uniform, randint, choice
 vec = pg.math.Vector2
 
 def collide_with_walls(sprite,group,dir):
@@ -35,6 +35,7 @@ class Player(pg.sprite.Sprite):
 		self.image = self.game.player_img
 		
 		self.rect = self.image.get_rect()
+		self.rect.center = (x,y)
 		self.hit_rect = PLAYER_HIT_RECT
 		
 		#self.vx,self.vy = 0,0
@@ -71,6 +72,7 @@ class Player(pg.sprite.Sprite):
 				pos = self.pos + BARREL_OFFSET.rotate(-self.rot)
 				Bullet(self.game,self.pos,direction)
 				self.vel = vec(-KICKBACK,0).rotate(-self.rot)
+				MuzzleFalsh(self.game,pos)
 
 			
 
@@ -268,3 +270,20 @@ class Bac_Bullet(pg.sprite.Sprite):
 			self.kill()
 		if pg.time.get_ticks() - self.spawn_time > BAC_BULLET_LIFETIME:
 			self.kill()
+
+class MuzzleFalsh(pg.sprite.Sprite):
+	def __init__(self,game,pos):
+		self.groups = game.all_sprites
+		pg.sprite.Sprite.__init__(self,self.groups)
+		self.game = game
+		size = randint(10,25)
+		self.image = pg.transform.scale(choice(game.gun_flashes),(size,size))
+		self.rect = self.image.get_rect()
+		self.pos = pos 
+		self.rect.center = pos
+		self.spawn_time = pg.time.get_ticks()
+
+	def update(self):
+		if pg.time.get_ticks() - self.spawn_time > FLASH_DURATION:
+			self.kill()
+

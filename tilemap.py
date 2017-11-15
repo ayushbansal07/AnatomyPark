@@ -1,7 +1,7 @@
 import pygame as pg 
-from pytmx.util_pygame import load_pygame
+#from pytmx.util_pygame import load_pygame
 from settings import *
-import pytmx
+#import pytmx
 
 class Map:
 	def __init__(self,filename):
@@ -14,6 +14,7 @@ class Map:
 		self.width = self.tilewidth * TILESIZE
 		self.height = self.tilewidth * TILESIZE
 
+'''
 class TiledMap:
 	def __init__(self,filename):
 		tm = load_pygame(filename, pixelalpha=True)
@@ -34,6 +35,7 @@ class TiledMap:
 		temp_surface = pg.Surface((self.width,self.height))
 		self.render(temp_surface)
 		return temp_surface
+'''
 
 
 def collide_hit_rect(one, two):
