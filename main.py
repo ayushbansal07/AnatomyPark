@@ -67,7 +67,7 @@ class Game:
 					cover+=1
 
 
-
+		self.paused = False
 		self.run()
 
 	
@@ -103,7 +103,8 @@ class Game:
 			self.dt = self.clock.tick(FPS)/1000.0
 			#print(self.dt)
 			self.events()
-			self.update()
+			if not self.paused:
+				self.update()
 			self.draw()	
 
 	def update(self):
@@ -156,7 +157,9 @@ class Game:
  			if event.type == pg.KEYDOWN:
  				if event.key == pg.K_ESCAPE:
  					pg.quit()
- 				
+ 				if event.key == pg.K_p:
+ 					self.paused = not self.paused
+ 			
 
 	def draw_grid(self):
 		for x in range(0,WIDTH,TILESIZE):
