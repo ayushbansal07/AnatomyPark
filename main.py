@@ -41,6 +41,7 @@ class Game:
 
 	def new(self):
 		#start a new game
+		self.healthDone = False
 		self.all_sprites = pg.sprite.Group()
 		self.walls = pg.sprite.Group()
 		self.bacteria = pg.sprite.Group()
@@ -50,6 +51,7 @@ class Game:
 		self.wbc_protect = pg.sprite.Group()
 		cover = 1 
 		self.load_data()
+		self.health_upgrade = Health_upgrade(self,vec(0,0))
 		for row,tiles in enumerate(self.map.data):
 			for col, tile in enumerate(tiles):
 				if tile == '1':
@@ -89,6 +91,8 @@ class Game:
 		self.gun_flashes = []
 		for img in MUZZLE_FLASHES:
 			self.gun_flashes.append(pg.image.load(path.join("./images/png",img)).convert_alpha())
+		self.health_img = pg.image.load("./images/apple.png")
+		self.health_img = pg.transform.scale(self.health_img,(TILESIZE,TILESIZE))
 		
 	def run(self):
 		#Game loop
@@ -129,6 +133,16 @@ class Game:
 		hits = pg.sprite.groupcollide(self.wbc_protect,self.bac_bullets, False,True)
 		for hit in hits:
 			hit.health -= BULLET_DAMAGE
+
+		if self.player.health < 0.50*PLAYER_HEALTH and not self.healthDone:
+			self.health_upgrade = Health_upgrade(self,vec(random.randint(5,15),random.randint(5,15))*TILESIZE)
+			self.healthDone = True
+
+		if pg.sprite.collide_rect(self.player,self.health_upgrade):
+			self.player.health = 0.70*PLAYER_HEALTH
+			self.health_upgrade.kill()
+			self.health_upgrade.rect.center = vec(0,0)
+		
 
 				
 		self.all_sprites.update()

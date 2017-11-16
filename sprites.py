@@ -367,3 +367,19 @@ class WBC_attack(pg.sprite.Sprite):
 
 	def update(self):
 		pass
+
+class Health_upgrade(pg.sprite.Sprite):
+	def __init__(self,game,pos):
+		self.groups = game.all_sprites
+		pg.sprite.Sprite.__init__(self,self.groups)
+		self.game = game
+		size = randint(10,25)
+		self.image = game.health_img
+		self.rect = self.image.get_rect()
+		self.pos = pos 
+		self.rect.center = pos
+		self.spawn_time = pg.time.get_ticks()
+
+	def update(self):
+		if pg.time.get_ticks() - self.spawn_time > HEALTH_DURATION:
+			self.kill()
