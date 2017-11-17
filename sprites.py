@@ -137,11 +137,12 @@ class Acid_Puddle(pg.sprite.Sprite):
 
 
 class Bacteria(pg.sprite.Sprite):
-	def __init__(self, game, x, y):
+	def __init__(self, game, x, y,type):
 		self.groups = game.all_sprites, game.bacteria
 		pg.sprite.Sprite.__init__(self,self.groups)
 		self.game = game
-		self.image = game.bac_img
+		self.type = type
+		self.image = game.bac_imgs[type]
 		#self.image.fill(GREEN)
 		self.rect = self.image.get_rect()
 		self.pos = vec(x,y)*TILESIZE
@@ -194,7 +195,7 @@ class Bacteria(pg.sprite.Sprite):
 
 	def update(self):
 		self.rot = (self.game.player.pos - self.pos).angle_to(vec(1,0))
-		self.image = pg.transform.rotate(self.game.bac_img,self.rot)
+		self.image = pg.transform.rotate(self.game.bac_imgs[self.type],self.rot)
 		self.rect = self.image.get_rect()
 		self.rect.center = self.pos
 		self.acc = vec(1,0).rotate(-self.rot)
@@ -240,6 +241,7 @@ class Bullet(pg.sprite.Sprite):
 		self.vel = dir.rotate(0) * BULLET_SPEED
 		self.spawn_time = pg.time.get_ticks()
 		self.game = game
+		self.bullet_type = 0
 
 	def update(self):
 		self.pos += self.vel * self.game.dt
@@ -248,6 +250,9 @@ class Bullet(pg.sprite.Sprite):
 			self.kill()
 		if pg.time.get_ticks() - self.spawn_time > BULLET_LIFETIME:
 			self.kill()
+		self.bullet_type = self.game.gun_type
+		self.image = self.game.bullet_imgs[self.bullet_type]
+
 
 class Bac_Bullet(pg.sprite.Sprite):
 	def __init__(self, game, pos, dir):
@@ -406,6 +411,7 @@ class WBC_Bullet(pg.sprite.Sprite):
 		if pg.time.get_ticks() - self.spawn_time > WBC_BULLET_LIFETIME:
 			self.kill()
 
+'''
 class WBC_attack(pg.sprite.Sprite):
 	def __init__(self,game,pos):
 		self.groups = game.all_sprites, game.wbc_attack
@@ -418,6 +424,7 @@ class WBC_attack(pg.sprite.Sprite):
 
 	def update(self):
 		pass
+'''
 
 class Health_upgrade(pg.sprite.Sprite):
 	def __init__(self,game,pos):

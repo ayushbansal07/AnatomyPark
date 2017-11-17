@@ -8,6 +8,17 @@ from tilemap import *
 from os import path
 
 #HUD Functions
+def text_to_screen(screen, text, x, y, size = 50,color = (200, 000, 000), font_type = './fonts/aerial.ttf'):
+    try:
+
+        text = str(text)
+        font = pg.font.Font(font_type, size)
+        text = font.render(text, True, color)
+        screen.blit(text, (x, y))
+
+    except Exception, e:
+        print 'Font Error, saw it coming'
+        raise e
 
 def draw_player_health(surf,x,y,pct):
 	if pct < 0 :
@@ -50,7 +61,9 @@ class Game:
 		self.bac_bullets = pg.sprite.Group()
 		self.wbc_protect = pg.sprite.Group()
 		self.wbc_bullets = pg.sprite.Group()
+		self.gun_type = 0
 		cover = 1 
+		bacteria_type = 0
 		self.load_data()
 		self.health_upgrade = Health_upgrade(self,vec(0,0))
 		for row,tiles in enumerate(self.map.data):
@@ -60,7 +73,8 @@ class Game:
 				if tile == 'P':
 					self.player = Player(self,col,row)
 				if tile == 'M':
-					Bacteria(self,col,row)
+					Bacteria(self,col,row,bacteria_type)
+					bacteria_type = (bacteria_type+1)%2
 				if tile == 'A':
 					Acid_Puddle(self,col,row)
 				if tile == 'W':
@@ -94,6 +108,16 @@ class Game:
 			self.gun_flashes.append(pg.image.load(path.join("./images/png",img)).convert_alpha())
 		self.health_img = pg.image.load("./images/apple.png")
 		self.health_img = pg.transform.scale(self.health_img,(TILESIZE,TILESIZE))
+		self.bullet_imgs = []
+		for bt in BULLET_IMAGES:
+			tempimg = pg.image.load(bt)
+			tempimg = pg.transform.scale(tempimg,(TILESIZE/4,TILESIZE/4))
+			self.bullet_imgs.append(tempimg)
+		self.bac_imgs = []
+		for bac in BACTERIA_IMAGES:
+			tempimg = pg.image.load(bac)
+			tempimg = pg.transform.scale(tempimg,(TILESIZE,TILESIZE))
+			self.bac_imgs.append(tempimg)
 		
 	def run(self):
 		#Game loop
@@ -118,7 +142,7 @@ class Game:
 				self.playing = False
 		hits = pg.sprite.groupcollide(self.bacteria,self.bullets,False,True)
 		for hit in hits:
-			hit.health-=BULLET_DAMAGE
+			hit.health-=BAC_HEALTH_RED_MATRIX[hit.type][self.gun_type]    		#BULLET_DAMAGE
 			
 		hits = pg.sprite.spritecollide(self.player ,self.acid_puddles ,False,collide_hit_rect)
 		for hit in hits:
@@ -160,6 +184,10 @@ class Game:
  					pg.quit()
  				if event.key == pg.K_p:
  					self.paused = not self.paused
+ 				if event.key == pg.K_s:
+ 					self.gun_type = (self.gun_type+1)%3
+ 				
+
  			
 
 	def draw_grid(self):
@@ -183,7 +211,15 @@ class Game:
  			self.screen.blit(sprite.image,sprite.rect)
  		#HUD 
  		draw_player_health(self.screen, 10, 10, self.player.health/PLAYER_HEALTH)
+
+ 		if self.paused:
+ 			text_to_screen(self.screen,"ABCDEFGH",0,0)
+
  		pg.display.flip()
+
+
+ 	
+
 
 	def show_start_screen(self):
 		#game start screen

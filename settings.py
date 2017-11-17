@@ -73,3 +73,8 @@ WBC_BULLET_SPEED = 250
 #HEALTH
 HEALTH_DURATION = 5000
 
+#bullets
+BULLET_IMAGES = ["./images/bullet1.png","./images/element_yellow_diamond.png","./images/element_red_diamond.png"]
+
+BACTERIA_IMAGES = ["./images/Bacteria_Cell.png","./images/Rick.png"]
+BAC_HEALTH_RED_MATRIX = [[1,2,3],[4,5,6]]
