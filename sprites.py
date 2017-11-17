@@ -296,7 +296,7 @@ class WBC_protect(pg.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.pos = vec(x,y)*TILESIZE
 		self.rect.center = self.pos
-		
+		self.last_shot = 0
 		self.health = 50
 		self.cover = cover
 		self.rot = 0
@@ -304,6 +304,18 @@ class WBC_protect(pg.sprite.Sprite):
 		self.acc = (0,0)
 		self.hit_rect = BAC_HIT_RECT.copy()
 		self.hit_rect.center = self.rect.center
+
+		if self.cover == 4:
+			bacs = game.bacteria.sprites()
+			for bac in bacs:
+				self.target_bacteria = bac
+				break
+
+		if self.cover == 6:
+			bacs = game.bacteria.sprites()
+			for bac in bacs:
+				self.target_bacteria = bac
+				break
 		#self.health = BAC_HEALTH
 
 	def arrive(self,target):
@@ -313,6 +325,21 @@ class WBC_protect(pg.sprite.Sprite):
 		self.rect.center = self.pos
 		self.acc = vec(1,0).rotate(-self.rot)
 		
+
+	def fire_bullets_on_bacteria(self):
+		target = self.target_bacteria
+		target_rot = target.rot
+		my_vector = self.pos-target.pos
+		my_angle = my_vector.angle_to(vec(1,0).rotate(-target_rot))
+		if -30 < my_angle and my_angle < 30:
+			#ran = uniform(0,1)
+			now = pg.time.get_ticks()
+			if now - self.last_shot > WBC_BULLET_RATE:
+				self.last_shot = now
+				direction = vec(1,0).rotate(-self.rot)
+				pos = self.pos + BARREL_OFFSET.rotate(-self.rot)
+				WBC_Bullet(self.game,self.pos,direction)
+				#self.vel = vec(-KICKBACK,0).rotate(-self.rot)
 
 	def avoid_wbc_and_player(self):
 		for wbc in self.game.wbc_protect:
@@ -334,10 +361,12 @@ class WBC_protect(pg.sprite.Sprite):
 			self.arrive(target+(-TILESIZE,-TILESIZE))
 		if(self.cover == 4):
 			self.arrive(target+(+TILESIZE,-TILESIZE))
+			self.fire_bullets_on_bacteria();
 		if(self.cover == 5):
 			self.arrive(target+(-TILESIZE,+TILESIZE))
 		if(self.cover == 6):
 			self.arrive(target+(+TILESIZE,+TILESIZE))
+			self.fire_bullets_on_bacteria()
 		if(self.cover == 7):
 			self.arrive(target+(TILESIZE,0))
 		if(self.cover == 8):
@@ -355,15 +384,37 @@ class WBC_protect(pg.sprite.Sprite):
 		if(self.health<=0):
 			self.kill()
 
+class WBC_Bullet(pg.sprite.Sprite):
+	def __init__(self, game, pos, dir):
+		self.groups = game.all_sprites,game.wbc_bullets
+		pg.sprite.Sprite.__init__(self,self.groups)
+		self.image = game.bullet_img
+		self.rect = self.image.get_rect()
+		self.pos = vec(pos)
+		self.rect.center = vec(pos)
+		spread = uniform(-GUN_SPREAD,GUN_SPREAD)
+		self.rot = dir.angle_to(vec(1,0))
+		self.vel = dir.rotate(0) * WBC_BULLET_SPEED
+		self.spawn_time = pg.time.get_ticks()
+		self.game = game
+
+	def update(self):
+		self.pos += self.vel * self.game.dt
+		self.rect.center = self.pos
+		if pg.sprite.spritecollideany(self,self.game.walls):
+			self.kill()
+		if pg.time.get_ticks() - self.spawn_time > WBC_BULLET_LIFETIME:
+			self.kill()
+
 class WBC_attack(pg.sprite.Sprite):
 	def __init__(self,game,pos):
 		self.groups = game.all_sprites, game.wbc_attack
 		pg.sprite.Sprite.__init__(self,self.groups)
 		self.game = game
+		self.image = game.bullet_img
 		self.rect = self.image.get_rect()
 		self.pos = pos 
 		self.rect.center = pos
-		self.image = game.bullet_img
 
 	def update(self):
 		pass

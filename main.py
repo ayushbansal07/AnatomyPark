@@ -49,6 +49,7 @@ class Game:
 		self.acid_puddles = pg.sprite.Group()
 		self.bac_bullets = pg.sprite.Group()
 		self.wbc_protect = pg.sprite.Group()
+		self.wbc_bullets = pg.sprite.Group()
 		cover = 1 
 		self.load_data()
 		self.health_upgrade = Health_upgrade(self,vec(0,0))
